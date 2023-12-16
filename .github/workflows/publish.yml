@@ -39,8 +39,6 @@ jobs:
             os: windows-latest
           - target: aarch64-pc-windows-msvc
             os: windows-latest
-          - target: x86_64-unknown-freebsd
-            os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     env:
       ENABLE_RUNTIME_TESTS: false
