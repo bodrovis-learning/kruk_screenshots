@@ -61,4 +61,4 @@ jobs:
           target: ${{ matrix.target }}
           # (required) GitHub token for uploading assets to GitHub Releases.
           token: ${{ secrets.GITHUB_TOKEN }}
-          archive: ${{ bin }}-${{ target }}-${{ os }}
+          archive: $bin-$target-$os
