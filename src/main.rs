@@ -2,9 +2,9 @@
 
 use chrono::{DateTime, Utc};
 use rdev::{grab, Event, EventType, Key};
-use screenshots::Screen;
 use std::env;
 use std::fs;
+use xcap::Monitor;
 
 const TARGET_DIR: &str = "screens";
 
@@ -16,7 +16,7 @@ fn main() -> std::io::Result<()> {
     path.push(&screens_dir);
 
     fs::create_dir_all(path)?;
-    
+
     if let Err(error) = grab(move |e| callback(e, &screens_dir)) {
         println!("Error: {error:?}");
     }
@@ -35,19 +35,24 @@ fn callback(event: Event, screens_dir: &String) -> Option<Event> {
 }
 
 fn make_screen(screens_dir: &String) {
-    let screens = Screen::all().unwrap();
+    let monitors = Monitor::all().unwrap();
 
-    for screen in screens {
-        let image = screen.capture().unwrap();
+    for monitor in monitors {
+        let image = monitor.capture_image().unwrap();
 
         let now: DateTime<Utc> = Utc::now();
 
         image
             .save(format!(
-                "{}/{}.png",
+                "{}/{}-{}.png",
                 screens_dir,
-                now.format("%d-%m-%Y_%H_%M_%S_%f")
+                now.format("%d-%m-%Y_%H_%M_%S"),
+                normalized(monitor.name())
             ))
             .unwrap();
     }
+}
+
+fn normalized(filename: &str) -> String {
+    filename.replace(['|', '\\', ':', '/'], "")
 }
