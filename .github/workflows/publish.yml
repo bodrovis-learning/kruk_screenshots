@@ -25,28 +25,28 @@ jobs:
     strategy:
       matrix:
         include:
-          - target: aarch64-apple-darwin
-            os: macos-latest
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-          - target: x86_64-unknown-linux-musl
-            os: ubuntu-latest
+          # - target: aarch64-apple-darwin
+          #   os: macos-latest
+          # - target: x86_64-unknown-linux-gnu
+          #   os: ubuntu-latest
+          # - target: x86_64-unknown-linux-musl
+          #   os: ubuntu-latest
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-latest
-          - target: arm-unknown-linux-gnueabi
-            os: ubuntu-latest
-          # - target: x86_64-unknown-linux-gnu
-          #   os: ubuntu-20.04
-          - target: x86_64-apple-darwin
-            os: macos-latest
-          - target: universal-apple-darwin
-            os: macos-latest
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
-          - target: i686-pc-windows-msvc
-            os: windows-latest
-          - target: aarch64-pc-windows-msvc
-            os: windows-latest
+          # - target: arm-unknown-linux-gnueabi
+          #   os: ubuntu-latest
+          # # - target: x86_64-unknown-linux-gnu
+          # #   os: ubuntu-20.04
+          # - target: x86_64-apple-darwin
+          #   os: macos-latest
+          # - target: universal-apple-darwin
+          #   os: macos-latest
+          # - target: x86_64-pc-windows-msvc
+          #   os: windows-latest
+          # - target: i686-pc-windows-msvc
+          #   os: windows-latest
+          # - target: aarch64-pc-windows-msvc
+          #   os: windows-latest
     runs-on: ${{ matrix.os }}
     env:
       ENABLE_RUNTIME_TESTS: false
@@ -61,11 +61,15 @@ jobs:
       - name: Install musl-tools on Linux
         run: sudo apt-get update --yes && sudo apt-get install --yes musl-tools
         if: contains(matrix.target, 'musl')
+      # - name: Install tools
+      #   run: sudo apt-get update --yes && sudo apt-get install --yes libxi-dev libx11-dev libxcb1 libxrandr2 libdbus-1-3 libxtst-dev
+      #   if: contains(matrix.os, 'ubuntu')
       - name: Install tools
-        run: sudo apt-get update --yes && sudo apt-get install --yes libxi-dev libx11-dev libxcb1 libxrandr2 libdbus-1-3 libxtst-dev
-        if: contains(matrix.os, 'ubuntu')
+        run: sudo apt-get update --yes && sudo apt-get install --yes libxi-dev:arm64 libx11-dev:arm64 libxcb1:arm64 libxrandr2:arm64 libdbus-1-3:arm64 libxtst-dev:arm64
+        if: contains(matrix.target, 'aarch64-unknown-linux')
       - name: Set env
         run: export PKG_CONFIG_SYSROOT_DIR=/
+        if: contains(matrix.os, 'ubuntu')
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
