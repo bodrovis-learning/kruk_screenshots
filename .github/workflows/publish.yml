@@ -66,10 +66,12 @@ jobs:
       #   if: contains(matrix.os, 'ubuntu')
       - name: Prepare arm64 repositories
         run: |
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ focal main multiverse universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ focal-security main multiverse universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ focal-backports main multiverse universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ focal-updates main multiverse universe" | sudo tee -a /etc/apt/sources.list
+          sudo tee /etc/apt/sources.list <<-EOF
+          deb [arch=arm64] http://ports.ubuntu.com/ focal main restricted universe multiverse
+          deb [arch=arm64] http://ports.ubuntu.com/ focal-updates main restricted universe multiverse
+          deb [arch=arm64] http://ports.ubuntu.com/ focal-backports main restricted universe multiverse
+          deb [arch=arm64] http://ports.ubuntu.com/ focal-security main restricted universe multiverse
+          EOF
           export PKG_CONFIG_SYSROOT_DIR=/
         if: contains(matrix.target, 'aarch64-unknown-linux')
       - name: Install tools
