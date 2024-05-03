@@ -8,6 +8,8 @@ Dependencies:
 * RDev
 * Screenshots
 
+*[Learn how this script was written](https://youtu.be/gva5UYcHVWM?feature=shared) (in Russian).*
+
 ## Overriding directory name
 
 To override the screenshots directory, simply provide the desired name when running the program:
