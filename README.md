@@ -4,9 +4,9 @@ A dead simple screenshot capturer script written in Rust. Run it, press `PrtScr`
 
 Dependencies:
 
-* Chrono
-* RDev
-* Screenshots
+* [Chrono](https://github.com/chronotope/chrono)
+* [RDev](https://github.com/Narsil/rdev)
+* [xcap](https://github.com/nashaofu/xcap)
 
 *[Learn how this script was written](https://youtu.be/gva5UYcHVWM?feature=shared) (in Russian).*
 
