@@ -1,6 +1,6 @@
 [package]
 name = "kruk_screenshots"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 chrono = "0.4.38"
 rdev = {version = "0.5.3", features = ["unstable_grab"]}
-xcap = "0.0.9"
+xcap = "0.0.10"
