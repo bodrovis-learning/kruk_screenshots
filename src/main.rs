@@ -25,12 +25,11 @@ fn main() -> std::io::Result<()> {
 }
 
 fn callback(event: Event, screens_dir: &String) -> Option<Event> {
-    match event.event_type {
-        EventType::KeyPress(Key::PrintScreen) => {
-            make_screen(screens_dir);
-            None
-        }
-        _ => Some(event),
+    if is_printscreen(&event) {
+        make_screen(screens_dir);
+        None
+    } else {
+        Some(event)
     }
 }
 
@@ -55,4 +54,14 @@ fn make_screen(screens_dir: &String) {
 
 fn normalized(filename: &str) -> String {
     filename.replace(['|', '\\', ':', '/'], "")
+}
+
+#[cfg(not(target_os = "macos"))]
+fn is_printscreen(event: &Event) -> bool {
+    matches!(event.event_type, EventType::KeyPress(Key::PrintScreen))
+}
+
+#[cfg(target_os = "macos")]
+fn is_printscreen(event: &Event) -> bool {
+    matches!(event.event_type, EventType::KeyPress(Key::F9))
 }
