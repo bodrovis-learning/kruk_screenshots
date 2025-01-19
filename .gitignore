@@ -1,2 +1,32 @@
 /target
 /screens
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# dotenv environment variables file
+.env
+
+.cache
+
+#DynamoDB Local files
+.dynamodb/
+
+#MACOS
+.DS_Store
+
+.idea/
+.env
+
+.nyc_output
+.vscode
