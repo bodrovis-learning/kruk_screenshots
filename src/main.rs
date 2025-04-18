@@ -27,10 +27,9 @@ fn main() -> std::io::Result<()> {
 fn callback(event: Event, screens_dir: &String) -> Option<Event> {
     if is_printscreen(&event) {
         make_screen(screens_dir);
-        None
-    } else {
-        Some(event)
+        return None;
     }
+    Some(event)
 }
 
 fn make_screen(screens_dir: &String) {
@@ -46,13 +45,13 @@ fn make_screen(screens_dir: &String) {
                 "{}/{}-{}.png",
                 screens_dir,
                 now.format("%d-%m-%Y_%H_%M_%S"),
-                normalized(monitor.name())
+                normalized(monitor.name().unwrap())
             ))
             .unwrap();
     }
 }
 
-fn normalized(filename: &str) -> String {
+fn normalized(filename: String) -> String {
     filename.replace(['|', '\\', ':', '/'], "")
 }
 
