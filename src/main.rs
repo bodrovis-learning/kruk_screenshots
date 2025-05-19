@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use rdev::{grab, Event, EventType, Key};
 use std::env;
 use std::fs;
+use std::path::PathBuf;
 use xcap::Monitor;
 
 const TARGET_DIR: &str = "screens";
@@ -24,7 +25,7 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-fn callback(event: Event, screens_dir: &String) -> Option<Event> {
+fn callback(event: Event, screens_dir: &str) -> Option<Event> {
     if is_printscreen(&event) {
         make_screen(screens_dir);
         return None;
@@ -32,7 +33,7 @@ fn callback(event: Event, screens_dir: &String) -> Option<Event> {
     Some(event)
 }
 
-fn make_screen(screens_dir: &String) {
+fn make_screen(screens_dir: &str) {
     let monitors = Monitor::all().unwrap();
 
     for monitor in monitors {
@@ -40,19 +41,25 @@ fn make_screen(screens_dir: &String) {
 
         let now: DateTime<Utc> = Utc::now();
 
-        image
-            .save(format!(
-                "{}/{}-{}.png",
-                screens_dir,
-                now.format("%d-%m-%Y_%H_%M_%S"),
-                normalized(monitor.name().unwrap())
-            ))
-            .unwrap();
+        let monitor_name_result = monitor.name();
+        let name = monitor_name_result.as_deref().unwrap_or("unknown");
+        let filename = format!(
+            "{}-{}.png",
+            now.format("%d-%m-%Y_%H_%M_%S"),
+            normalized(name)
+        );
+        let mut full_path = PathBuf::from(screens_dir);
+        full_path.push(filename);
+
+        image.save(full_path).unwrap();
     }
 }
 
-fn normalized(filename: String) -> String {
-    filename.replace(['|', '\\', ':', '/'], "")
+fn normalized(filename: &str) -> String {
+    filename
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_'))
+        .collect()
 }
 
 #[cfg(not(target_os = "macos"))]
