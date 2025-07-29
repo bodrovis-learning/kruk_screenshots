@@ -1090,7 +1090,7 @@ checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 
 [[package]]
 name = "kruk_screenshots"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "chrono",
  "rdev",
@@ -2613,9 +2613,9 @@ dependencies = [
 
 [[package]]
 name = "xcap"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef2d00d06bcbe2c8e00092190fbd54f85a181473a5ccff8ccc8e01fffef94454"
+checksum = "7921260094351cd497514d5fccba8066316cacbdb15b3b3bda6e7345447c67a7"
 dependencies = [
  "dispatch2",
  "image",
