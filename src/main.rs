@@ -10,9 +10,7 @@ use xcap::Monitor;
 const TARGET_DIR: &str = "screens";
 
 fn main() -> std::io::Result<()> {
-    let args: Vec<String> = env::args().collect();
-
-    let screens_dir = args.get(1).unwrap_or(&TARGET_DIR.to_string()).to_string();
+    let screens_dir = get_screens_dir();
     let mut path = env::current_dir()?;
     path.push(&screens_dir);
 
@@ -25,13 +23,46 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
+fn get_screens_dir() -> String {
+    let args: Vec<String> = env::args().collect();
+
+    let screens_dir = args.get(1).unwrap_or(&TARGET_DIR.to_string()).to_string();
+
+    screens_dir
+}
+
+
+fn repair_screens_dir() -> bool {
+    let screens_dir = get_screens_dir();
+
+    match fs::create_dir(&screens_dir) {
+        Ok(()) => true,
+        Err(e) => {
+            eprintln!("Ошибка: {}", e);
+            false
+        },
+    }
+}
+
+fn check_screens_dir(dir_path: &str) -> bool {
+    let full_path = PathBuf::from(dir_path);
+
+    std::path::Path::new(&full_path).is_dir()
+}
+
 fn callback(event: Event, screens_dir: &str) -> Option<Event> {
     if is_printscreen(&event) {
+        if check_screens_dir(screens_dir) == false {
+            repair_screens_dir();
+        }
         make_screen(screens_dir);
+
         return None;
     }
     Some(event)
 }
+
+
 
 fn make_screen(screens_dir: &str) {
     let monitors = Monitor::all().unwrap();
