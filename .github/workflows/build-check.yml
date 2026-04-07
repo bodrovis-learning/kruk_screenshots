@@ -1,49 +1,22 @@
-name: Release
-
-permissions:
-  contents: write
+name: Build check
 
 on:
-  push:
-    tags:
-      - v[0-9]+.*
   workflow_dispatch:
 
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: taiki-e/create-gh-release-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  upload-assets:
-    needs: create-release
+  build:
     strategy:
       fail-fast: false
       matrix:
         include:
-          - target: aarch64-apple-darwin
-            os: macos-latest
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
           - target: x86_64-apple-darwin
             os: macos-latest
-          - target: universal-apple-darwin
-            os: macos-latest
           - target: x86_64-pc-windows-msvc
-            os: windows-latest
-          - target: i686-pc-windows-msvc
-            os: windows-latest
-          - target: aarch64-pc-windows-msvc
             os: windows-latest
 
     runs-on: ${{ matrix.os }}
-
-    env:
-      ENABLE_RUNTIME_TESTS: false
-      PKG_CONFIG_SYSROOT_DIR: /
 
     steps:
       - uses: actions/checkout@v6
@@ -72,8 +45,8 @@ jobs:
             libxkbcommon-dev \
             libgbm-dev
 
-      - uses: taiki-e/upload-rust-binary-action@v1
-        with:
-          bin: kruk_screenshots
-          target: ${{ matrix.target }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Clippy
+        run: cargo clippy --release --target ${{ matrix.target }} -- -D warnings
