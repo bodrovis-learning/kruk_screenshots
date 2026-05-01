@@ -1,6 +1,6 @@
 # Screenshot capturer
 
-A dead simple screenshot capturer script written in Rust. Run it, press `Ctrl+Shift+S`, observe your screenshot in the the `screens` directory (the directory will be created automatically if it does not exist).
+A dead simple screenshot capturer script written in Rust. Run it, press `Ctrl+PrtScr`, observe your screenshot in the the `screens` directory (the directory will be created automatically if it does not exist).
 
 Dependencies:
 
