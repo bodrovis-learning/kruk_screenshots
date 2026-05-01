@@ -90,7 +90,7 @@ fn is_matching_press(event: GlobalHotKeyEvent, hotkey: HotKey) -> bool {
 }
 
 fn screenshot_hotkey() -> HotKey {
-    HotKey::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyS)
+    HotKey::new(Some(Modifiers::CONTROL), Code::PrintScreen)
 }
 
 /// Resolves the absolute screenshots directory path.
