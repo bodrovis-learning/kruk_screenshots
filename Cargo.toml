@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 global-hotkey = "0.8.0"
-xcap = "0.9.4"
+xcap = "0.9.6"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61.2", features = [
