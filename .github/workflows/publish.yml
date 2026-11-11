@@ -17,7 +17,7 @@ concurrency:
 jobs:
   create-release:
     name: Create draft release
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     permissions:
       contents: write
@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Linux
+          # Linux — older glibc for better binary compatibility
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-24.04
 
@@ -116,7 +116,7 @@ jobs:
   publish-release:
     name: Publish release
     needs: upload-assets
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     permissions:
       contents: write

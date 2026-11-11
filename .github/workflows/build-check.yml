@@ -18,10 +18,10 @@ jobs:
         include:
           # Linux
           - target: x86_64-unknown-linux-gnu
-            os: ubuntu-24.04
+            os: ubuntu-26.04
 
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-24.04-arm
+            os: ubuntu-26.04-arm
 
           # macOS
           - target: x86_64-apple-darwin
