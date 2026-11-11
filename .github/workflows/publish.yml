@@ -1,80 +1,97 @@
-name: Release
 
-permissions:
-  contents: write
+name: Release
 
 on:
   push:
     tags:
       - v[0-9]+.*
 
+permissions:
+  contents: read
+
+# Do not run two release pipelines for the same tag simultaneously.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   create-release:
-    runs-on: ubuntu-latest
+    name: Create draft release
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          fetch-depth: 0
           persist-credentials: false
-      - uses: taiki-e/create-gh-release-action@045e5c0ed9c50cc1f96de7e891a09ad3daea245f
+
+      - name: Create draft release
+        uses: taiki-e/create-gh-release-action@045e5c0ed9c50cc1f96de7e891a09ad3daea245f
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
 
   upload-assets:
+    name: Build ${{ matrix.target }}
     needs: create-release
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: write
+
     strategy:
       fail-fast: false
       matrix:
         include:
+          # Linux
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-24.04
+
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+
+          # macOS
+          - target: x86_64-apple-darwin
+            os: macos-15-intel
+
+          - target: aarch64-apple-darwin
+            os: macos-15
+
+          - target: universal-apple-darwin
+            os: macos-15
+
+          # Windows
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-          - target: x86_64-apple-darwin
-            os: macos-latest
-          - target: aarch64-apple-darwin
-            os: macos-latest
-          - target: universal-apple-darwin
-            os: macos-latest
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
 
-    runs-on: ${{ matrix.os }}
+          - target: i686-pc-windows-msvc
+            os: windows-latest
 
-    env:
-      ENABLE_RUNTIME_TESTS: false
-      PKG_CONFIG_SYSROOT_DIR: /
+          - target: aarch64-pc-windows-msvc
+            os: windows-11-arm
 
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Install Rust toolchain
-        if: matrix.target != 'universal-apple-darwin'
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
-
-      - name: Install Rust toolchain for universal macOS build
-        if: matrix.target == 'universal-apple-darwin'
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin,aarch64-apple-darwin
-
-      - name: Install cross-compilation tools
-        uses: taiki-e/setup-cross-toolchain-action@12b7ad4acfa95a1476779d6c06699b96ec1691f8
-        with:
-          target: ${{ matrix.target }}
-          runner: none
-        if: startsWith(matrix.os, 'ubuntu')
+          targets: ${{ matrix.target == 'universal-apple-darwin' && 'x86_64-apple-darwin,aarch64-apple-darwin' || matrix.target }}
 
       - name: Install Linux native dependencies
-        if: matrix.os == 'ubuntu-latest'
+        if: runner.os == 'Linux'
+        shell: bash
         run: |
           sudo apt-get update --yes
           sudo apt-get install --yes \
+            pkg-config \
+            libclang-dev \
             libxi-dev \
             libx11-dev \
             libxcb1-dev \
@@ -87,8 +104,68 @@ jobs:
             libxkbcommon-dev \
             libgbm-dev
 
-      - uses: taiki-e/upload-rust-binary-action@f0d45ae91ee7b8ee928de7a9d04d893a08bcbec6
+      - name: Build and upload binary
+        uses: taiki-e/upload-rust-binary-action@f0d45ae91ee7b8ee928de7a9d04d893a08bcbec6
         with:
           bin: kruk_screenshots
           target: ${{ matrix.target }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          build-tool: cargo
+          locked: true
+
+  publish-release:
+    name: Publish release
+    needs: upload-assets
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Verify release assets and publish
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          # The release must still be a draft.
+          is_draft=$(gh release view "$TAG" \
+            --json isDraft --jq '.isDraft')
+
+          if [[ "$is_draft" != "true" ]]; then
+            echo "Release is not a draft"
+            exit 1
+          fi
+
+          # Check every expected archive before publishing.
+          gh release view "$TAG" \
+            --json assets --jq '.assets[].name' > assets.txt
+
+          expected_assets=(
+            "kruk_screenshots-x86_64-unknown-linux-gnu.tar.gz"
+            "kruk_screenshots-aarch64-unknown-linux-gnu.tar.gz"
+            "kruk_screenshots-x86_64-apple-darwin.tar.gz"
+            "kruk_screenshots-aarch64-apple-darwin.tar.gz"
+            "kruk_screenshots-universal-apple-darwin.tar.gz"
+            "kruk_screenshots-x86_64-pc-windows-msvc.zip"
+            "kruk_screenshots-i686-pc-windows-msvc.zip"
+            "kruk_screenshots-aarch64-pc-windows-msvc.zip"
+          )
+
+          for asset in "${expected_assets[@]}"; do
+            if ! grep -Fxq "$asset" assets.txt; then
+              echo "Missing release asset: $asset"
+              exit 1
+            fi
+          done
+
+          if [[ "$(wc -l < assets.txt)" -ne 8 ]]; then
+            echo "Unexpected number of release assets"
+            cat assets.txt
+            exit 1
+          fi
+
+          gh release edit "$TAG" --draft=false
