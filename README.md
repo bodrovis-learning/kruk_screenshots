@@ -58,14 +58,6 @@ The executable will be available in `target/release/` (with an `.exe` extension 
 
 Looking for a dedicated Windows screenshot utility? Check out [Kruk Shot](https://github.com/bodrovis-learning/kruk-shot), written in Go and using DXGI Desktop Duplication for capturing desktop applications and fullscreen games.
 
-## Overriding directory name
-
-To override the screenshots directory, simply provide the desired name when running the program:
-
-```
-kruk_screenshots custom_dir
-```
-
 ## Building
 
 ```
