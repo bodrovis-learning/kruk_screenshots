@@ -140,7 +140,7 @@ fn screenshot_hotkey() -> HotKey {
 // Standard Mac keyboards do not have a Print Screen key.
 #[cfg(target_os = "macos")]
 fn screenshot_hotkey() -> HotKey {
-    HotKey::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyS)
+    HotKey::new(Some(Modifiers::META | Modifiers::SHIFT), Code::KeyS)
 }
 
 /// Resolves the screenshots directory relative to the working directory,
