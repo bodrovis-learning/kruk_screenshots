@@ -1,3 +1,4 @@
+
 name: Build check
 
 on:
@@ -5,42 +6,60 @@ on:
 
 permissions:
   contents: read
-  
+
 jobs:
   build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
         include:
+          # Linux
           - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
+            os: ubuntu-24.04
+
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+
+          # macOS
           - target: x86_64-apple-darwin
-            os: macos-latest
+            os: macos-15-intel
+
+          - target: aarch64-apple-darwin
+            os: macos-15
+
+          # Windows
           - target: x86_64-pc-windows-msvc
             os: windows-latest
 
-    runs-on: ${{ matrix.os }}
+          - target: i686-pc-windows-msvc
+            os: windows-latest
+
+          - target: aarch64-pc-windows-msvc
+            os: windows-11-arm
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-          
-      - name: Install cross-compilation tools
-        uses: taiki-e/setup-cross-toolchain-action@v1
-        with:
-          target: ${{ matrix.target }}
-          runner: none
-        if: startsWith(matrix.os, 'ubuntu')
+          components: clippy
 
       - name: Install Linux native dependencies
-        if: matrix.os == 'ubuntu-latest'
+        if: runner.os == 'Linux'
+        shell: bash
         run: |
           sudo apt-get update --yes
           sudo apt-get install --yes \
+            pkg-config \
+            libclang-dev \
             libxi-dev \
             libx11-dev \
             libxcb1-dev \
@@ -54,7 +73,7 @@ jobs:
             libgbm-dev
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --locked --target ${{ matrix.target }}
 
       - name: Clippy
-        run: cargo clippy --release --target ${{ matrix.target }} -- -D warnings
+        run: cargo clippy --release --locked --target ${{ matrix.target }} -- -D warnings
